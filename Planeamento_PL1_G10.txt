@@ -1,0 +1,6 @@
+Para a primeira fase do TP2 da UC de Comunicações por Computador:
+    -   Linguagem a utilizar: JAVA;
+    -   Formas de comunicação entre o grupo: Discord e Messenger;
+    -   Repositório para codigo: git - github.com/Kaixi26/CC_2020;
+    -   Elaboração do relatório: overleaf;
+PL1-Grupo 10
