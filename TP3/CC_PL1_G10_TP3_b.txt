@@ -1,0 +1,63 @@
+a) Qual o conteúdo do ficheiro /etc/resolv.conf e para que serve essa informação?
+
+O ficheiro contém informação que determina os parâmetros operacionais dos servidores DNS, assim como os 
+servidores DNS por defeito para resolução de domain names e IPs. 
+
+
+
+b) Os servidores www.sapo.pt. e www.yahoo.com. têm endereços IPv6? Se sim, quais?
+
+Sim, ambos os servidores têm endereços IPV6, como se pode observar pela seguinte figura.
+
+
+c) Quais os servidores de nomes definidos para os domínios: “uminho.pt.”, “pt.” e “.”?
+
+Resposta: Todos os nameserver apresentados representam os servidores de nomes definidos para o domínio uminho.pt.
+
+Resposta: Todos os nameserver apresentados representam os servidores de nomes definidos para o domínio pt.
+
+Resposta: Todos os nameserver apresentados representam os servidores de nomes definidos para o domínio .
+
+
+d) Existe o domínio nice.software.? Será que nice.software. é um host ou um domínio?
+
+R: Tem name servers, logo existe o domínio nice.software. É um host pois tem endereço IP.
+
+
+e) Qual é o servidor DNS primário definido para o domínio msf.org.? Este servidor primário (master) aceita queries
+recursivas? Porquê?
+
+
+R: O servidor primário é ns1.dds.nl. 
+R: O servidor primário aceita queries recursivas porque nas flags da resposta ao comando ’dig
+ns1.dds.nl. está presente ”ra” (recursion available).
+
+
+DUVIDA... TEM ra nas flags mas nao chega a outros dominios
+
+
+f) Obtenha uma resposta “autoritativa” para a questão anterior.
+
+NUNCA CONSIGO UMA MERDA DE UMA Resposta DESTAS
+
+g) Onde são entregues as mensagens de correio eletrónico dirigidas aos presidentes marcelo@presidencia.pt e
+bolsonaro@casacivil.gov.br?
+
+R: As mensagens são entregues nos servidores mail2.presidencia.pt e mail1.presidencia.pt.
+R: As mensagens s˜ao entregues nos servidores esa01.presidencia.gov.br e esa02.presidencia.gov.br.
+
+
+h) Que informação é possível obter, via DNS, acerca de whitehouse.gov?
+
+
+
+i) Consegue interrogar o DNS sobre o endereço IPv6 2001:690:a00:1036:1113::247 usando algum dos clientes
+DNS? Que informação consegue obter? Supondo que teve problemas com esse endereço, consegue obter um contacto do
+responsável por esse IPv6?
+
+
+j) Os secundários usam um mecanismo designado por “Transferência de zona” para se atualizarem automaticamente a partir
+do primário, usando os parâmetros definidos no Record do tipo SOA do domínio. Descreve sucintamente esse mecanismo com
+base num exemplo concreto (ex: di.uminho.pt ou o domínio cc.pt que vai ser criado na topologia virtual).
+
+
