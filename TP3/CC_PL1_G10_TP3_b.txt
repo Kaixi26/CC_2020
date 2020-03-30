@@ -34,7 +34,7 @@ ns1.dds.nl. está presente ”ra” (recursion available).
 
 
 DUVIDA... TEM ra nas flags mas nao chega a outros dominios
-
+PERGUNTAR AMANHA
 
 f) Obtenha uma resposta “autoritativa” para a questão anterior.
 
