@@ -1,0 +1,32 @@
+;
+; BIND data file for cc.pt
+;
+$TTL	604800
+@	IN	SOA	dns.cc.pt. grupo10.cc.pt. (
+			      4		; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			 604800 )	; Negative Cache TTL
+;
+
+@	IN	NS	dns.cc.pt.
+@	IN	NS	dns2.cc.pt.
+
+mail	IN	MX	10	Serv1
+www	IN	CNAME	Serv1
+dns	IN	A	10.3.3.1
+dns2	IN	A	10.4.4.1
+mail	IN	MX	20	Serv2
+
+Serv1	IN	A	10.3.3.1
+Hermes	IN	A	10.4.4.1
+Serv2	IN	A	10.3.3.2
+
+pop	IN	CNAME	Serv2
+imap	IN	CNAME	Serv2
+
+Portatil1	IN	A	10.1.1.1
+Grupo10 	IN	CNAME	Portatil1
+Atena		IN	A	10.4.4.3
+Zeus		IN	A	10.4.4.2
