@@ -22,7 +22,7 @@ public class ServerHandler extends Thread {
                 System.out.print("Read from server: ");
                 for(int i=0; i<rd; i++) System.out.print(buf[i]+"");
                 System.out.print("\n");
-                cout.write(buf);
+                cout.write(buf, 0, rd);
             }
             System.out.println("Closing client handler.");
         } catch (Exception e){
