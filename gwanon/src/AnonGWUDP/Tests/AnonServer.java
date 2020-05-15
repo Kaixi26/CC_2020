@@ -27,7 +27,7 @@ public class AnonServer {
             });
             packetRecieved.setDaemon(true);
             packetRecieved.start();
-            System.out.println("Packet reciever started.");
+            System.out.println("Packet receiver started.");
 
             Thread socketHandler = new Thread(new Runnable() {
                 public void run() {

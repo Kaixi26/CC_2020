@@ -24,7 +24,7 @@ public class ServerHandler extends Thread {
                 System.out.print("\n");
                 cout.write(buf, 0, rd);
             }
-            System.out.println("Closing client handler.");
+            System.out.println("Closing server handler.");
         } catch (Exception e){
             e.printStackTrace();
         }
