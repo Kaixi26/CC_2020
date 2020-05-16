@@ -1,10 +1,10 @@
 package AnonGWUDP;
 
+import Encryption.SharedKey;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 
 public class AnonGWSocket {
@@ -14,6 +14,7 @@ public class AnonGWSocket {
     AnonGWOutInfo outInfo;
     final long id;
     boolean closed = false;
+    SharedKey key;
 
     AnonGWSocket(AnonGWServerSocket parent, AnonGWConnection anonGWConnection, long id){
         this.parent = parent;
@@ -36,9 +37,10 @@ public class AnonGWSocket {
 
     /* TODO: SPLIT PACKETS IN SMALL SYZES ? */
     public void send(byte[] data) throws IOException, AnonGWClosedException {
-        ByteBuffer bbuf = ByteBuffer.allocate(AnonGWHeader.headerLength() + data.length);
-        bbuf.put(new AnonGWHeader(AnonGWHeaderType.DATA, outInfo.id, data.length).serialize());
-        bbuf.put(data);
+        byte[] encData = key.encryptWith(data);
+        ByteBuffer bbuf = ByteBuffer.allocate(AnonGWHeader.headerLength() + encData.length);
+        bbuf.put(new AnonGWHeader(AnonGWHeaderType.DATA, outInfo.id, encData.length).serialize());
+        bbuf.put(encData);
         byte[] buf = bbuf.array();
         DatagramPacket datagramPacket
                 = new DatagramPacket(buf, buf.length, outInfo.address, outInfo.port);
@@ -48,7 +50,8 @@ public class AnonGWSocket {
 
     /* TODO send ack (?) */
     public byte[] read() throws IOException, AnonGWClosedException {
-        byte[] ret = connection.awaitType(AnonGWHeaderType.DATA).getData();
+        byte[] encData = connection.awaitType(AnonGWHeaderType.DATA).getData();
+        byte[] ret = key.decryptWith(encData);
         byte[] buf = new AnonGWHeader(AnonGWHeaderType.DATA_ACK, outInfo.id, 0).serialize();
         datagramSocket.send(new DatagramPacket(buf, buf.length, outInfo.address, outInfo.port));
         return ret;
@@ -73,5 +76,9 @@ public class AnonGWSocket {
 
     public void setOutInfo(AnonGWOutInfo outInfo) {
         this.outInfo = outInfo;
+    }
+
+    public void setKey(SharedKey key) {
+        this.key = key;
     }
 }

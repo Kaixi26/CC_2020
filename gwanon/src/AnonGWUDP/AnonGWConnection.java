@@ -1,5 +1,7 @@
 package AnonGWUDP;
 
+import Encryption.SharedKey;
+
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;

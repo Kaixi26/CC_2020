@@ -1,11 +1,16 @@
 package AnonGWUDP;
 
+import Encryption.KeyPair;
+import Encryption.SharedKey;
+
 import javax.imageio.IIOException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.security.Key;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -19,6 +24,7 @@ public class AnonGWServerSocket {
     long next = 0;
     Map<Long, AnonGWSocket> sockets = new HashMap<>();
     List<AnonGWOutInfo> unassigned = new ArrayList<>();
+    KeyPair keys = new KeyPair();
 
     public AnonGWServerSocket(int port) throws SocketException {
         datagramSocket = new DatagramSocket(port);
@@ -34,7 +40,9 @@ public class AnonGWServerSocket {
             AnonGWHeader header = AnonGWHeader.parse(packet.getData());
             if (header.type == AnonGWHeaderType.CONNECT) {
                 System.out.println("Connect.");
-                unassigned.add(new AnonGWOutInfo(packet.getAddress(), packet.getPort(), header.id));
+                AnonGWConnectData connectData = AnonGWConnectData.parse(
+                    Arrays.copyOfRange(packet.getData(), AnonGWHeader.headerLength(), AnonGWHeader.headerLength() + (int)header.datalength));
+                unassigned.add(new AnonGWOutInfo(packet.getAddress(), packet.getPort(), connectData.id, connectData.publicKey));
                 acceptCond.signalAll();
             } else if(header.type == AnonGWHeaderType.CLOSE){
                 System.out.println("Close.");
@@ -58,11 +66,14 @@ public class AnonGWServerSocket {
             AnonGWOutInfo outInfo = unassigned.get(0);
             unassigned.remove(0);
             AnonGWConnection connection = new AnonGWConnection();
-            byte[] buf = new AnonGWHeader(AnonGWHeaderType.CONNECT_ACK, outInfo.id, next).serialize();
+            ByteBuffer bbuf = ByteBuffer.allocate(AnonGWHeader.headerLength() + AnonGWConnectData.length());
+            bbuf.put(new AnonGWHeader(AnonGWHeaderType.CONNECT_ACK, outInfo.id, AnonGWConnectData.length()).serialize());
+            bbuf.put(new AnonGWConnectData(next, 0, keys.publicKey).serialize());
             DatagramPacket datagramPacket
-                    = new DatagramPacket(buf, buf.length, outInfo.address, outInfo.port);
+                    = new DatagramPacket(bbuf.array(), bbuf.array().length, outInfo.address, outInfo.port);
             datagramSocket.send(datagramPacket);
             AnonGWSocket ret = new AnonGWSocket(this, connection, outInfo, next);
+            ret.setKey(new SharedKey(keys.privateKey, outInfo.externPublicKey));
             sockets.put(next, ret);
             return ret;
         } finally {
@@ -75,8 +86,10 @@ public class AnonGWServerSocket {
         l.lock();
         try {
             long connectionId = next++;
-            byte[] buf = new AnonGWHeader(AnonGWHeaderType.CONNECT, connectionId, 0).serialize();
-            DatagramPacket req = new DatagramPacket(buf, buf.length, address, port);
+            ByteBuffer bbuf = ByteBuffer.allocate(AnonGWHeader.headerLength() + AnonGWConnectData.length());
+            bbuf.put(new AnonGWHeader(AnonGWHeaderType.CONNECT, connectionId, AnonGWConnectData.length()).serialize());
+            bbuf.put(new AnonGWConnectData(connectionId, 0, keys.publicKey).serialize());
+            DatagramPacket req = new DatagramPacket(bbuf.array(), bbuf.array().length, address, port);
             datagramSocket.send(req);
             AnonGWConnection connection = new AnonGWConnection();
             AnonGWSocket ret = new AnonGWSocket(this, connection, connectionId);
@@ -84,7 +97,9 @@ public class AnonGWServerSocket {
             l.unlock();
             AnonGWHeaderDataPair hdp = connection.awaitType(AnonGWHeaderType.CONNECT_ACK);
             l.lock();
-            ret.setOutInfo(new AnonGWOutInfo(address, port, hdp.anonGWHeader.datalength));
+            AnonGWConnectData connectData = AnonGWConnectData.parse(hdp.getData());
+            ret.setOutInfo(new AnonGWOutInfo(address, port, connectData.id, connectData.publicKey));
+            ret.setKey(new SharedKey(keys.privateKey, connectData.publicKey));
             return ret;
         } finally {
             l.unlock();
