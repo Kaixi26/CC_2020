@@ -24,7 +24,7 @@ public class AnonClient {
             });
             packetReciever.setDaemon(true);
             packetReciever.start();
-            AnonGWSocket sock =  ssock.connect(InetAddress.getByName("127.1.1.1"), 8888);
+            AnonGWSocket sock =  ssock.connect(InetAddress.getByName("127.1.1.1"), 8888, 1);
             System.out.println("Connection established.");
             sock.send("Hello.");
             System.out.println("Sent.");

@@ -74,11 +74,15 @@ public class AnonGWSocket {
         return closed;
     }
 
-    public void setOutInfo(AnonGWOutInfo outInfo) {
+    void setOutInfo(AnonGWOutInfo outInfo) {
         this.outInfo = outInfo;
     }
 
-    public void setKey(SharedKey key) {
+    void setKey(SharedKey key) {
         this.key = key;
+    }
+
+    public int getHops(){
+        return outInfo.hops;
     }
 }

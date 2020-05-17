@@ -18,8 +18,6 @@ public class SharedKey {
         lkey = BigInteger.valueOf(externPrivateKey)
                 .modPow(BigInteger.valueOf(privateKey), PublicValues.n)
                 .longValue();
-        System.out.println("PRIVATE KEY: " + privateKey);
-        System.out.println("KEY: " + lkey);
 
         try {
             byte[] key = String.valueOf(lkey).getBytes("UTF-8");

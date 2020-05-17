@@ -1,11 +1,15 @@
-import Handler.ClientHandler;
-import Handler.ConnectionHandler;
-import Handler.ServerHandler;
+import AnonGWUDP.AnonGWConnectData;
+import AnonGWUDP.AnonGWServerSocket;
+import AnonGWUDP.AnonGWSocket;
+import Handler.Old.ConnectionHandler;
+import Handler.TCPConnectionHandler;
+import Handler.UDPConnectionHandler;
 import Settings.ImmutableSettings;
 import Settings.Settings;
 import Settings.UDPIdentifier;
 
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.util.Scanner;
 
 public class Main {
@@ -46,12 +50,17 @@ public class Main {
         return settings.getImmutableSettings();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SocketException, InterruptedException {
         ImmutableSettings settings = parseArgs(args);
-        Thread tcpThread = tcpThread(settings);
+        AnonGWServerSocket anonGWServerSocket = new AnonGWServerSocket(settings.getUdpPort());
+        Thread tcpThread = tcpThread(settings, anonGWServerSocket);
+        Thread anonGWThread = anonGWThread(settings, anonGWServerSocket);
         tcpThread.setDaemon(true);
+        anonGWThread.setDaemon(true);
         tcpThread.start();
-        System.out.print("Write 'exit' to close the gateway.\n>> ");
+        anonGWThread.start();
+        Thread.sleep(500);
+        System.out.print("Write 'exit' to close the gateway.\n>> \n");
         Scanner scanner = new Scanner(System.in);
         String cmd = scanner.nextLine();
         while (!cmd.equals("quit") && !cmd.equals("exit") && !cmd.equals(":q")){
@@ -61,16 +70,45 @@ public class Main {
         }
     }
 
-    private static Thread tcpThread(ImmutableSettings settings){
+    private static Thread tcpThread(ImmutableSettings settings, AnonGWServerSocket anonGWServerSocket){
         return new Thread(new Runnable() {
             public void run() {
                 try {
                     ServerSocket sock = new ServerSocket(settings.getTcpPort());
-                    while (true) {
-                        new ConnectionHandler(settings, sock.accept()).start();
-                        System.out.println("Accepted new connection.");
-                    }
+                    System.out.println("Opened TCP server on port " + settings.getTcpPort() + ".");
+                    while (true)
+                        new TCPConnectionHandler(settings, sock.accept(), anonGWServerSocket).start();
                 } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private static Thread anonGWThread(ImmutableSettings settings, AnonGWServerSocket anonGWServerSocket){
+        return new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    System.out.println("Opened UDP server on port " + settings.getUdpPort() + ".");
+                    Thread packetCollector = anonGWpacketCollector(anonGWServerSocket);
+                    packetCollector.setDaemon(true);
+                    packetCollector.start();
+                    while (true)
+                        new UDPConnectionHandler(settings, anonGWServerSocket.accept(), anonGWServerSocket).start();
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private static Thread anonGWpacketCollector(AnonGWServerSocket ssock){
+        return new Thread(new Runnable() {
+            public void run() {
+                while(true) try {
+                    ssock.recievePacket();
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
